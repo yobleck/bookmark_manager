@@ -1,0 +1,24 @@
+chromium
+/home/yobleck/.config/chromium/Default/Bookmarks
+    json file
+
+import json
+f = open("./Bookmarks", "r")
+j = json.load(f)
+j["roots"]["bookmark_bar"]["children"]
+also roots>other and all its children
+children = folder?
+
+
+firefox
+browser.bookmarks.autoExportHTML = true
+/home/yobleck/.mozilla/firefox/miex1agx.default-release/
+    bookmarkbackups/
+    places.sqlite
+    bookmarks.html
+    sqlite3 -header -csv ./places.sqlite "select * from moz_bookmarks;" > bookmarks.csv
+        doesnt include urls. firefox=morons
+
+get newest file from bookmarkbackups
+then run lz4jsoncat bookmarks-2022-01-27_2565_mBmGREArjfEBRyoUiPg3bw==.jsonlz4 > bookmarks.json
+    requires lz4json package
