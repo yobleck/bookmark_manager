@@ -49,17 +49,17 @@ def draw_tabs(tabs: list, hl: int) -> None:
     print("\x1b[2;0H", end="")
     for i, t in enumerate(tabs):
         if i == hl:
-            print("\x1b[7m" + t.name + "\x1b[0m", end=" ")
+            print("\x1b[7m" + t[0].name + "\x1b[0m", end=" ")
         else:
-            print(t.name, end=" ")
+            print(t[0].name, end=" ")
 
 
-def draw_options(tab, hl: int):
+def draw_options(tab):
     w, h = shutil.get_terminal_size()
 
     print("\x1b[3;0H", end="")
-    for i, o in enumerate(tab.children):
-        if i == hl:
+    for i, o in enumerate(tab[0].children):
+        if i == tab[1]:
             print("\x1b[7m" + o.name + "\x1b[0m")
         else:
             print(o.name)

@@ -34,18 +34,18 @@ def create_initial_tabs() -> list:
               ("Import Both", no_op),
               ("Quit", partial(quit, 0, ""))]:
         main.add_folder(*f)
-    tabs.append(main)
+    tabs.append([main, 0])  # NOTE second item keeps track of highlight pos
     
     help_m = bookmarks.folder("Help", no_op)
     for f in [("q to quit", partial(quit, 0, "")),
               ("enter to select highlighted option", no_op),
               ("arrow keys to move highlight", no_op)]:
         help_m.add_folder(*f)
-    tabs.append(help_m)
+    tabs.append([help_m, 0])
     return tabs
 
 def add_tab(tabs: list, folder) -> None:
-    tabs.append(folder)
+    tabs.append([folder, 0])
 
 
 def main() -> None:
@@ -64,14 +64,13 @@ def main() -> None:
     tab_highlight = 0
     tabs = create_initial_tabs()
     add_tab(tabs, bookmark_temp)
-    op_highlight = 0  # line to be selected
 
     print("\x1b[2J\x1b[H", end="")  # clear screen
     print("\x1b[4mBookmark Manager\x1b[0m")
 
     while True:
         tui.draw_tabs(tabs, tab_highlight)
-        tui.draw_options(tabs[tab_highlight], op_highlight)
+        tui.draw_options(tabs[tab_highlight])
 
         char = tui.getch(True)
 
@@ -80,10 +79,10 @@ def main() -> None:
 
         elif char == "\x1b":  # beginning of escape sequence
             char = tui.handle_esc()
-            if char == "up" and op_highlight > 0:
-                op_highlight -= 1
-            elif char == "dn" and op_highlight < len(tabs[tab_highlight].children) - 1:
-                op_highlight += 1
+            if char == "up" and tabs[tab_highlight][1] > 0:
+                tabs[tab_highlight][1] -= 1
+            elif char == "dn" and tabs[tab_highlight][1] < len(tabs[tab_highlight][0].children) - 1:
+                tabs[tab_highlight][1] += 1
             elif char == "lf" and tab_highlight > 0:
                 tab_highlight -= 1
                 print("\x1b[3;0H\x1b[0J", end="")
@@ -97,9 +96,9 @@ def main() -> None:
             char = "ent"  # for printing purposes only?
             try:
                 pass
-                tabs[tab_highlight].children[op_highlight].command()
+                tabs[tab_highlight][0].children[tabs[tab_highlight][1]].command()
             except Exception as e:
-                log("operation failed: " + tabs[tab_highlight].name + "/" + tabs[tab_highlight].children[op_highlight].name)
+                log("operation failed: " + tabs[tab_highlight][0].name + "/" + tabs[tab_highlight][0].children[tabs[tab_highlight][1]].name)
                 quit(1, e)
 
         tui.draw_keypress(char)
