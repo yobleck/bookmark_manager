@@ -16,7 +16,7 @@ with open("./config.json", "r") as f:
         config = json.load(f)
     except Exception as e:
         print("config failed to load:")
-        print(e)
+        raise Exception(e)
 
 
 def log(i) -> None:
@@ -44,17 +44,20 @@ def main() -> None:
     tabs = []
     tab_highlight = 0
 
+
     def enter_folder() -> None:
         tab = tabs[tab_highlight]
         option = tab[0].children[tab[1]]
         log(option.name)
         tabs[tab_highlight] = [option, 0]
 
+
     def parent_folder() -> None:
         tab = tabs[tab_highlight]
         parent = tab[0].parent
         log(parent.name)
         tabs[tab_highlight] = [parent, 0]
+
 
     def create_initial_tabs() -> list:
         tabs = []
@@ -76,9 +79,9 @@ def main() -> None:
                   ("folders are green and urls are blue", no_op),
                   ("q to quit", partial(quit, 0, "")),]:
             help_m.add_folder(*f)
-        #tabs.append([help_m, 0])
         return tabs
     tabs = create_initial_tabs()
+
 
     #ff_j = bookmarks.import_ff(config["firefox_filepath"])
     #c_j = bookmarks.import_c(config["chromium_filepath"])
@@ -92,8 +95,10 @@ def main() -> None:
 
     add_tab(tabs, bookmark_temp)
 
+
     print("\x1b[2J\x1b[H", end="")  # clear screen
     print("\x1b[4mBookmark Manager\x1b[0m")
+
 
     char = "w"
 
@@ -101,31 +106,41 @@ def main() -> None:
         tui.draw_tabs(tabs, tab_highlight)
         tui.draw_options(tabs[tab_highlight])
         tui.draw_keypress(char)
+
+
         char = tui.getch(True)
+
 
         if char == "q":
             break
+
 
         elif char == "\x1b":  # beginning of escape sequence
             char = tui.handle_esc()
             if char == "up" and tabs[tab_highlight][1] > 0:
                 tabs[tab_highlight][1] -= 1
+
             elif char == "dn" and tabs[tab_highlight][1] < len(tabs[tab_highlight][0].children) - 1:
                 tabs[tab_highlight][1] += 1
+
             elif char == "shft+tb" and tab_highlight > 0:
                 tab_highlight -= 1
                 print("\x1b[3;0H\x1b[0J", end="")
+
             elif char == "lf":
                 parent_folder()
+
             elif char == "rt":
                 if tabs[tab_highlight][0].children[tabs[tab_highlight][1]].typee == "folder":
                     tabs[tab_highlight][0].children[tabs[tab_highlight][1]].command()
+
 
         elif char == "\t":  # NOTE tab isn't an ansi esc sequence os its handled here instead
             char = "tab"  # to show on screen
             if tab_highlight < len(tabs) - 1:
                 tab_highlight += 1
                 print("\x1b[3;0H\x1b[0J", end="")
+
 
         elif ord(char) == 10:
             char = "ent"  # to show on screen
@@ -135,8 +150,6 @@ def main() -> None:
             except Exception as e:
                 log("operation failed: " + tabs[tab_highlight][0].name + "/" + tabs[tab_highlight][0].children[tabs[tab_highlight][1]].name)
                 quit(1, e)
-
-        #tui.draw_keypress(char)
 
 
 if __name__ == "__main__":

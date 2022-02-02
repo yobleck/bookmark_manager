@@ -10,7 +10,7 @@ with open("./config.json", "r") as f:
         config = json.load(f)
     except Exception as e:
         print("config failed to load:")
-        print(e)
+        raise Exception(e)
 
 
 def log(i) -> None:

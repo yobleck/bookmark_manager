@@ -3,6 +3,7 @@ import sys
 import termios
 import datetime
 import shutil
+import json
 
 
 with open("./config.json", "r") as f:
@@ -10,11 +11,11 @@ with open("./config.json", "r") as f:
         config = json.load(f)
     except Exception as e:
         print("config failed to load:")
-        print(e)
+        raise Exception(e)
 
 
 def log(i) -> None:
-    if config["logging"]:  # doesn't work cause config not found?
+    if config["logging"]:
         with open("log.txt", "a+") as f:
             f.write(datetime.datetime.now().isoformat() + ": " + str(i) + "\n")
 
@@ -37,10 +38,10 @@ def getch(blocking: bool = True) -> str:
 esc_chars = {"A": "up", "B": "dn", "C": "rt", "D": "lf", "Z": "shft+tb"}
 def handle_esc() -> str:
     a = getch(False)
-    #print("a" + a)
+    #log("a" + a)
     if a == "[":
         k = getch(False)  # assuming 3 bytes for now
-        #print("k " + k)
+        #log("k " + k)
         if k in esc_chars.keys():
             return esc_chars[k]
         return "esc[ error: " + a + k
@@ -61,6 +62,7 @@ def draw_tabs(tabs: list, hl: int) -> None:
             print("\x1b[7m" + t[0].name + "\x1b[0m", end=" ")
         else:
             print(t[0].name, end=" ")
+
 
 colors = {"folder": "\x1b[32m", "url": "\x1b[34m"}
 def draw_options(tab: list) -> None:
