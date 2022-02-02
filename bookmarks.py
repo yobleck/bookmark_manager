@@ -5,15 +5,24 @@ import datetime  # TODO only import needed stuff?
 from functools import partial 
 
 
+with open("./config.json", "r") as f:
+    try:
+        config = json.load(f)
+    except Exception as e:
+        print("config failed to load:")
+        print(e)
+
+
 def log(i) -> None:
-    with open("log.txt", "a+") as f:
-        f.write(datetime.datetime.now().isoformat() + ": " + str(i) + "\n")
+    if config["logging"]:
+        with open("log.txt", "a+") as f:
+            f.write(datetime.datetime.now().isoformat() + ": " + str(i) + "\n")
 
 
 def quit(i, e):
     print("\x1b[2J\x1b[H", end="")
     print(e) if e else None
-    log("close\n")
+    log("close log\n")
     sys.exit(i)
 
 
@@ -46,13 +55,14 @@ def import_c(filepath: str) -> dict:  # filepath to Bookmarks file
 
 # TODO dont need the bookmark and folder class. just use a function that make a dict
 class bookmark():
-    def __init__(self, name: str, url: str):
+    def __init__(self, name: str, url: str, parent):
         self.name = name
         self.url = url  # uri for firefox
         self.date_added = None
         self.idd = None  # tuple of firefox/chromium? firefox calls this index?
         self.guid = None  # ditto?
         self.typee = "url"  # "text/x-moz-place"
+        self.parent = parent
 
     def command(self, browser: str = "chromium"):  # This runs when the user hit enter
         try:
@@ -68,15 +78,20 @@ class bookmark():
 
 
 class folder():
-    def __init__(self, name: str, command):
+    def __init__(self, name: str, command, parent = None):
         self.name = name
         self.typee = "folder"  # "text/x-moz-place-container"
         self.children = []
         self.command = command
+        if parent is None:
+            self.parent = self
+        else:
+            self.parent = parent
         log("created folder: " + name)
 
     def add_bookmark(self, name: str, url: str):
-        self.children.append(bookmark(name, url))  # TODO handle bookmarks with same name/url with uuid
+        self.children.append(bookmark(name, url, parent = self))  # TODO handle bookmarks with same name/url with uuid
+        log("added bookmark: " + name)
 
     def add_folder(self, name: str, command):
         if self.search(name, "folder"):  # remove this?
@@ -84,7 +99,8 @@ class folder():
             print("Error: folder: " + name + " already exists")
             pass
         else:
-            self.children.append(folder(name, command))
+            self.children.append(folder(name, command, parent = self))
+            log("added folder: " + name)
 
     def search(self, name: str, typee: str) -> list:
         results = []

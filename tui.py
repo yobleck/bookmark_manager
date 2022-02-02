@@ -5,9 +5,18 @@ import datetime
 import shutil
 
 
+with open("./config.json", "r") as f:
+    try:
+        config = json.load(f)
+    except Exception as e:
+        print("config failed to load:")
+        print(e)
+
+
 def log(i) -> None:
-    with open("log.txt", "a+") as f:
-        f.write(datetime.datetime.now().isoformat() + ": " + str(i) + "\n")
+    if config["logging"]:  # doesn't work cause config not found?
+        with open("log.txt", "a+") as f:
+            f.write(datetime.datetime.now().isoformat() + ": " + str(i) + "\n")
 
 
 def getch(blocking: bool = True) -> str:
@@ -25,20 +34,20 @@ def getch(blocking: bool = True) -> str:
     return ch
 
 
-esc_chars = {"A": "up", "B": "dn", "C": "rt", "D": "lf"}
+esc_chars = {"A": "up", "B": "dn", "C": "rt", "D": "lf", "Z": "shft+tb"}
 def handle_esc() -> str:
     a = getch(False)
-    #print("a", a)
+    #print("a" + a)
     if a == "[":
         k = getch(False)  # assuming 3 bytes for now
-        #print("k", k)
+        #print("k " + k)
         if k in esc_chars.keys():
             return esc_chars[k]
-        return "[ error"
+        return "esc[ error: " + a + k
     return "esc"
 
 
-def draw_keypress(ch):
+def draw_keypress(ch: str) -> None:
     w, h = shutil.get_terminal_size()
     print("\x1b[" + str(h) + ";0H\x1b[0K\x1b[0G", end="")  # erase bottom line
     print("pressed: " + ch + " \x1b[1A")
@@ -46,20 +55,19 @@ def draw_keypress(ch):
 
 def draw_tabs(tabs: list, hl: int) -> None:
     w, h = shutil.get_terminal_size()
-    print("\x1b[2;0H", end="")
+    print("\x1b[2;0H\x1b[0K", end="")
     for i, t in enumerate(tabs):
         if i == hl:
             print("\x1b[7m" + t[0].name + "\x1b[0m", end=" ")
         else:
             print(t[0].name, end=" ")
 
-
-def draw_options(tab):
+colors = {"folder": "\x1b[32m", "url": "\x1b[34m"}
+def draw_options(tab: list) -> None:
     w, h = shutil.get_terminal_size()
-
-    print("\x1b[3;0H", end="")
+    print("\x1b[3;0H\x1b[0J", end="")
     for i, o in enumerate(tab[0].children):
         if i == tab[1]:
-            print("\x1b[7m" + o.name + "\x1b[0m")
+            print("\x1b[7m" + colors[o.typee] + o.name + "\x1b[0m")
         else:
-            print(o.name)
+            print(colors[o.typee] + o.name + "\x1b[0m")
