@@ -22,3 +22,5 @@ browser.bookmarks.autoExportHTML = true
 get newest file from bookmarkbackups
 then run lz4jsoncat bookmarks-2022-01-27_2565_mBmGREArjfEBRyoUiPg3bw==.jsonlz4 > bookmarks.json
     requires lz4json package
+
+TODO scrolling of long lists

@@ -36,7 +36,7 @@ no_op = lambda: None
 
 
 def add_tab(tabs: list, folder) -> None:
-    tabs.append([folder, 0])
+    tabs.append([folder, 0])  # tab as object?
 
 
 def main() -> None:
@@ -48,14 +48,15 @@ def main() -> None:
     def enter_folder() -> None:
         tab = tabs[tab_highlight]
         option = tab[0].children[tab[1]]
-        log(option.name)
+        log("enter folder: " + option.name)
         tabs[tab_highlight] = [option, 0]
+        #tabs[tab_highlight] = [tabs[tab_highlight][0].children[tabs[tab_highlight][1]], 0]  # TODO condense to one line
 
 
     def parent_folder() -> None:
         tab = tabs[tab_highlight]
         parent = tab[0].parent
-        log(parent.name)
+        log("go up to folder: " + parent.name)
         tabs[tab_highlight] = [parent, 0]
 
 
@@ -65,7 +66,7 @@ def main() -> None:
         for f in [("Import Firefox", no_op),
                 ("Import Chromium", no_op),
                 ("Import Both", no_op),
-                ("Help", partial(enter_folder)),
+                ("Help", enter_folder),
                 ("Quit", partial(quit, 0, ""))]:
             main.add_folder(*f)
         tabs.append([main, 0])  # NOTE second item keeps track of highlight pos
@@ -76,7 +77,7 @@ def main() -> None:
                   ("right arrow key to enter folder", no_op),
                   ("left arrow key to return to parent folder", no_op),
                   ("enter to select highlighted option", no_op),
-                  ("folders are green and urls are blue", no_op),
+                  ("\x1b[32mfolders are green and\x1b[34m urls are blue\x1b[0m", no_op),
                   ("q to quit", partial(quit, 0, "")),]:
             help_m.add_folder(*f)
         return tabs
@@ -84,17 +85,18 @@ def main() -> None:
 
 
     #ff_j = bookmarks.import_ff(config["firefox_filepath"])
-    #c_j = bookmarks.import_c(config["chromium_filepath"])
-    #print(ff_j)
-    bookmark_temp = bookmarks.folder("root", no_op)
-    for f in [("folder1", partial(enter_folder)), ("folder2", partial(enter_folder))]:
+    c_j = bookmarks.import_c(config["chromium_filepath"])
+    c_fol = bookmarks.create_c_tree(c_j, None, enter_folder)
+
+    bookmark_temp = bookmarks.folder("test", no_op)
+    for f in [("folder1", enter_folder), ("folder2", enter_folder)]:
         bookmark_temp.add_folder(*f)
         bookmark_temp.children[-1].add_bookmark("yc", "https://news.ycombinator.com/")
     for f in [("yt", "https://www.youtube.com/feed/channels"), ("yc", "https://news.ycombinator.com/")]:
         bookmark_temp.add_bookmark(*f)
 
     add_tab(tabs, bookmark_temp)
-
+    add_tab(tabs, c_fol)
 
     print("\x1b[2J\x1b[H", end="")  # clear screen
     print("\x1b[4mBookmark Manager\x1b[0m")
