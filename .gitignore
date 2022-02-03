@@ -1,5 +1,6 @@
 /firefox
 /chromium
 /old
-log.txt
 /__pycache__
+log.txt
+test.py

@@ -1,38 +1,14 @@
 # Bookmark viewer and synchronizer for chromium and firefox
-import sys, termios  # noqa
-import json, subprocess, shutil  # noqa
-import datetime  # TODO only import needed stuff?
-import setproctitle  # TODO make this optional
+import sys
 from functools import partial
+import setproctitle  # TODO make this optional
 
 import tui
 import bookmarks
+import utils
+
 
 setproctitle.setproctitle("bookmark_manager")
-
-
-with open("./config.json", "r") as f:
-    try:
-        config = json.load(f)
-    except Exception as e:
-        print("config failed to load:")
-        raise Exception(e)
-
-
-def log(i) -> None:
-    if config["logging"]:
-        with open("log.txt", "a+") as f:
-            f.write(datetime.datetime.now().isoformat() + ": " + str(i) + "\n")
-
-
-def quit(i, e):
-    print("\x1b[2J\x1b[H", end="")
-    print(e) if e else None
-    log("close log\n")
-    sys.exit(i)
-
-
-no_op = lambda: None
 
 
 def main() -> None:
@@ -44,7 +20,7 @@ def main() -> None:
     def enter_folder() -> None:
         tab = tabs[tab_highlight]
         option = tab[0].children[tab[1]]
-        log("enter folder: " + option.name)
+        utils.log("enter folder: " + option.name)
         tabs[tab_highlight] = [option, 0]
         #tabs[tab_highlight] = [tabs[tab_highlight][0].children[tabs[tab_highlight][1]], 0]  # TODO condense to one line
 
@@ -52,7 +28,7 @@ def main() -> None:
     def parent_folder() -> None:
         tab = tabs[tab_highlight]
         parent = tab[0].parent
-        log("go up to folder: " + parent.name)
+        utils.log("go up to folder: " + parent.name)
         tabs[tab_highlight] = [parent, 0]
 
 
@@ -63,7 +39,7 @@ def main() -> None:
 
     def do_chromium():
         nonlocal tabs
-        c_j = bookmarks.import_c(config["chromium_filepath"])
+        c_j = bookmarks.import_c(utils.config["chromium_filepath"])
         c_fol = bookmarks.create_c_tree(c_j, None, enter_folder)
         tab_exists = False
         for i, t in enumerate(tabs):
@@ -79,33 +55,33 @@ def main() -> None:
     def create_initial_tabs() -> list:
         nonlocal tabs
         #tabs = []
-        main = bookmarks.folder("Main", no_op)
-        for f in [("Import Firefox", no_op),
+        main = bookmarks.folder("Main", utils.no_op)
+        for f in [("Import Firefox", utils.no_op),
                 ("Import Chromium", do_chromium),
-                ("Import Both", no_op),
+                ("Import Both", utils.no_op),
                 ("Help", enter_folder),
-                ("Quit", partial(quit, 0, ""))]:
+                ("Quit", partial(utils.quit, 0, ""))]:
             main.add_folder(*f)
         tabs.append([main, 0])  # NOTE second item keeps track of highlight pos
 
-        help_m = main.children[3]  # TODO DONT HARD CODE THIS. bookmarks.folder("Help", no_op)
-        for f in [("tab/shift+tab to change tabs", no_op),
-                  ("up/down arrow keys to change selection", no_op),
-                  ("right arrow key to enter folder", no_op),
-                  ("left arrow key to return to parent folder", no_op),
-                  ("d to delete tab", no_op),
-                  ("enter to select highlighted option", no_op),
-                  ("\x1b[32mfolders are green and\x1b[34m urls are blue\x1b[0m", no_op),
-                  ("q to quit", partial(quit, 0, "")),]:
+        help_m = main.children[3]  # TODO DONT HARD CODE THIS. bookmarks.folder("Help", utils.no_op)
+        for f in [("tab/shift+tab to change tabs", utils.no_op),
+                  ("up/down arrow keys to change selection", utils.no_op),
+                  ("right arrow key to enter folder", utils.no_op),
+                  ("left arrow key to return to parent folder", utils.no_op),
+                  ("d to delete tab", utils.no_op),
+                  ("enter to select highlighted option", utils.no_op),
+                  ("\x1b[32mfolders are green and\x1b[34m urls are blue\x1b[0m", utils.no_op),
+                  ("q to quit", partial(utils.quit, 0, "")),]:
             help_m.add_folder(*f)
         return tabs
     tabs = create_initial_tabs()
 
 
-    #ff_j = bookmarks.import_ff(config["firefox_filepath"])
+    #ff_j = bookmarks.import_ff(utils.config["firefox_filepath"])
 
 
-    bookmark_temp = bookmarks.folder("test", no_op)
+    bookmark_temp = bookmarks.folder("test", utils.no_op)
     for f in [("folder1", enter_folder), ("folder2", enter_folder)]:
         bookmark_temp.add_folder(*f)
         bookmark_temp.children[-1].add_bookmark("yc", "https://news.ycombinator.com/")
@@ -167,8 +143,8 @@ def main() -> None:
                 pass
                 tabs[tab_highlight][0].children[tabs[tab_highlight][1]].command()
             except Exception as e:
-                log("operation failed: " + tabs[tab_highlight][0].name + "/" + tabs[tab_highlight][0].children[tabs[tab_highlight][1]].name)
-                quit(1, e)
+                utils.log("operation failed: " + tabs[tab_highlight][0].name + "/" + tabs[tab_highlight][0].children[tabs[tab_highlight][1]].name)
+                utils.quit(1, e)
 
 
         elif char == "d":
@@ -178,10 +154,10 @@ def main() -> None:
                 try:
                     del tabs[old]
                 except Exception as e:
-                    log("failed to delete folder")
-                    quit(1, e)
+                    utils.log("failed to delete folder")
+                    utils.quit(1, e)
 
 
 if __name__ == "__main__":
     main()
-    quit(0, "")
+    utils.quit(0, "")

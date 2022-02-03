@@ -1,23 +1,9 @@
 # UI handler
 import sys
 import termios
-import datetime
 import shutil
-import json
 
-
-with open("./config.json", "r") as f:
-    try:
-        config = json.load(f)
-    except Exception as e:
-        print("config failed to load:")
-        raise Exception(e)
-
-
-def log(i) -> None:
-    if config["logging"]:
-        with open("log.txt", "a+") as f:
-            f.write(datetime.datetime.now().isoformat() + ": " + str(i) + "\n")
+import utils
 
 
 def getch(blocking: bool = True) -> str:
@@ -38,10 +24,10 @@ def getch(blocking: bool = True) -> str:
 esc_chars = {"A": "up", "B": "dn", "C": "rt", "D": "lf", "Z": "shft+tb"}
 def handle_esc() -> str:
     a = getch(False)
-    #log("a" + a)
+    #utils.log("a" + a)
     if a == "[":
         k = getch(False)  # assuming 3 bytes for now
-        #log("k " + k)
+        #utils.log("k " + k)
         if k in esc_chars.keys():
             return esc_chars[k]
         return "esc[ error: " + a + k
