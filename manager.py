@@ -35,9 +35,6 @@ def quit(i, e):
 no_op = lambda: None
 
 
-
-
-
 def main() -> None:
     # Generate fake folders for menus
     tabs = []
@@ -57,9 +54,6 @@ def main() -> None:
         parent = tab[0].parent
         log("go up to folder: " + parent.name)
         tabs[tab_highlight] = [parent, 0]
-
-
-    tabs = []
 
 
     def add_tab(folder) -> None:
@@ -99,6 +93,7 @@ def main() -> None:
                   ("up/down arrow keys to change selection", no_op),
                   ("right arrow key to enter folder", no_op),
                   ("left arrow key to return to parent folder", no_op),
+                  ("d to delete tab", no_op),
                   ("enter to select highlighted option", no_op),
                   ("\x1b[32mfolders are green and\x1b[34m urls are blue\x1b[0m", no_op),
                   ("q to quit", partial(quit, 0, "")),]:
@@ -124,7 +119,7 @@ def main() -> None:
     print("\x1b[4mBookmark Manager\x1b[0m")
 
 
-    char = "w"
+    char = "w"  # null character?
 
     while True:
         tui.draw_tabs(tabs, tab_highlight)
@@ -174,6 +169,17 @@ def main() -> None:
             except Exception as e:
                 log("operation failed: " + tabs[tab_highlight][0].name + "/" + tabs[tab_highlight][0].children[tabs[tab_highlight][1]].name)
                 quit(1, e)
+
+
+        elif char == "d":
+            if tab_highlight > 0:
+                old = tab_highlight
+                tab_highlight = 0
+                try:
+                    del tabs[old]
+                except Exception as e:
+                    log("failed to delete folder")
+                    quit(1, e)
 
 
 if __name__ == "__main__":
