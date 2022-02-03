@@ -51,7 +51,7 @@ def import_c(filepath: str) -> dict:  # filepath to Bookmarks file
 
         #change chromium's root dict to have the same format as the rest
         j = j["roots"]
-        j["type"] = "folder"; j["name"] = "root"
+        j["type"] = "folder"; j["name"] = "chromium"
         j["children"] = [j["bookmark_bar"], j["other"], j["synced"]]
         del j["bookmark_bar"]; del j["other"]; del j["synced"]
 

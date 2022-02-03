@@ -35,8 +35,7 @@ def quit(i, e):
 no_op = lambda: None
 
 
-def add_tab(tabs: list, folder) -> None:
-    tabs.append([folder, 0])  # tab as object?
+
 
 
 def main() -> None:
@@ -60,11 +59,35 @@ def main() -> None:
         tabs[tab_highlight] = [parent, 0]
 
 
+    tabs = []
+
+
+    def add_tab(folder) -> None:
+        nonlocal tabs  # WARNING I've coded myself into a corner here. TOO BAD
+        tabs.append([folder, 0])  # tab as object?
+
+
+    def do_chromium():
+        nonlocal tabs
+        c_j = bookmarks.import_c(config["chromium_filepath"])
+        c_fol = bookmarks.create_c_tree(c_j, None, enter_folder)
+        tab_exists = False
+        for i, t in enumerate(tabs):
+            if t[0].name == "chromium":
+                tab_exists = True
+                break
+        if tab_exists:
+            tabs[i] = [c_fol, 0]
+        else:
+            add_tab(c_fol)  # BUG adds new tab if old tab is in subfolder
+
+
     def create_initial_tabs() -> list:
-        tabs = []
+        nonlocal tabs
+        #tabs = []
         main = bookmarks.folder("Main", no_op)
         for f in [("Import Firefox", no_op),
-                ("Import Chromium", no_op),
+                ("Import Chromium", do_chromium),
                 ("Import Both", no_op),
                 ("Help", enter_folder),
                 ("Quit", partial(quit, 0, ""))]:
@@ -85,8 +108,7 @@ def main() -> None:
 
 
     #ff_j = bookmarks.import_ff(config["firefox_filepath"])
-    c_j = bookmarks.import_c(config["chromium_filepath"])
-    c_fol = bookmarks.create_c_tree(c_j, None, enter_folder)
+
 
     bookmark_temp = bookmarks.folder("test", no_op)
     for f in [("folder1", enter_folder), ("folder2", enter_folder)]:
@@ -95,8 +117,8 @@ def main() -> None:
     for f in [("yt", "https://www.youtube.com/feed/channels"), ("yc", "https://news.ycombinator.com/")]:
         bookmark_temp.add_bookmark(*f)
 
-    add_tab(tabs, bookmark_temp)
-    add_tab(tabs, c_fol)
+    add_tab(bookmark_temp)
+
 
     print("\x1b[2J\x1b[H", end="")  # clear screen
     print("\x1b[4mBookmark Manager\x1b[0m")
