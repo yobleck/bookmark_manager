@@ -1,4 +1,4 @@
-#TODO add stuff 
+# Helper functions
 import sys
 import json
 import datetime
@@ -13,7 +13,9 @@ def load_config() -> dict:
             raise Exception(e)
     return config
 
+
 config = load_config()
+
 
 def log(i) -> None:
     if config["logging"]:

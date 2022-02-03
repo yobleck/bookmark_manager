@@ -1,8 +1,7 @@
 # handles actual bookmarks
-import sys
 import json
-import subprocess
 import shutil
+import subprocess
 
 import utils
 
@@ -30,11 +29,11 @@ def import_c(filepath: str) -> dict:  # filepath to Bookmarks file
             j = json.load(f)
         utils.log("imported chromium bookmarks")
 
-        #change chromium's root dict to have the same format as the rest
+        # change chromium's root dict to have the same format as the rest
         j = j["roots"]
         j["type"] = "folder"; j["name"] = "chromium"
         j["children"] = [j["bookmark_bar"], j["other"], j["synced"]]
-        del j["bookmark_bar"]; del j["other"]; del j["synced"]
+        del j["bookmark_bar"]; del j["other"]; del j["synced"]  # don't hard code this?
 
         return j  # TODO delete sync_metadata key?
     except Exception as e:
@@ -45,11 +44,11 @@ def create_c_tree(js, par, command):
     #print("start")
     assert isinstance(js, dict) and "type" in js and js["type"] == "folder" and "children" in js
     #[print(x) for x in js]
-    temp_folder = folder(name = js["name"], command = command, parent = par)
+    temp_folder = folder(name=js["name"], command=command, parent=par)
     for c in js["children"]:
         if c["type"] == "url":
             #print("url", c["name"])
-            temp_folder.add_bookmark(name = c["name"], url = c["url"])
+            temp_folder.add_bookmark(name=c["name"], url=c["url"])
         elif c["type"] == "folder":
             #print("folder", c["name"])
             create_c_tree(c, temp_folder, command)
@@ -80,12 +79,12 @@ class bookmark():
             print(e)
             #sys.exit(1)
 
-    def to_json() -> dict:
+    def to_json(self) -> dict:
         return{"name": self.name, "url": self.url}
 
 
 class folder():
-    def __init__(self, name: str, command, parent = None):
+    def __init__(self, name: str, command, parent=None):
         self.name = name
         self.typee = "folder"  # "text/x-moz-place-container"
         self.children = []
@@ -98,7 +97,7 @@ class folder():
         utils.log("created folder: " + name)
 
     def add_bookmark(self, name: str, url: str):
-        self.children.append(bookmark(name, url, parent = self))  # TODO handle bookmarks with same name/url with uuid
+        self.children.append(bookmark(name, url, parent=self))  # TODO handle bookmarks with same name/url with uuid
         utils.log("added bookmark: " + name)
 
     def add_folder(self, name: str, command):
@@ -107,7 +106,7 @@ class folder():
             print("Error: folder: " + name + " already exists")
             pass
         else:
-            folder(name, command, parent = self)
+            folder(name, command, parent=self)
             #self.children.append(folder(name, command, parent = self))
             #utils.log("added folder: " + name)
 
@@ -116,7 +115,7 @@ class folder():
         # TODO
         return results
 
-    def to_json() -> dict:
+    def to_json(self) -> dict:
         return {"name": self.name, "children": self.children}  # TODO add typee
 
 

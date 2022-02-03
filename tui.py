@@ -1,7 +1,7 @@
 # UI handler
+import shutil
 import sys
 import termios
-import shutil
 
 import utils
 
@@ -22,6 +22,8 @@ def getch(blocking: bool = True) -> str:
 
 
 esc_chars = {"A": "up", "B": "dn", "C": "rt", "D": "lf", "Z": "shft+tb"}
+
+
 def handle_esc() -> str:
     a = getch(False)
     #utils.log("a" + a)
@@ -51,6 +53,8 @@ def draw_tabs(tabs: list, hl: int) -> None:
 
 
 colors = {"folder": "\x1b[32m", "url": "\x1b[34m"}
+
+
 def draw_options(tab: list) -> None:
     w, h = shutil.get_terminal_size()
     print("\x1b[3;0H\x1b[0J", end="")
