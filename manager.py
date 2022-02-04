@@ -12,7 +12,7 @@ setproctitle.setproctitle("bookmark_manager")
 
 def main() -> None:
     # Generate fake folders for menus
-    tabs = []
+    tabs = []  # tabs as object?
     tab_highlight = 0
 
     def enter_folder() -> None:
@@ -30,7 +30,7 @@ def main() -> None:
 
     def add_tab(folder) -> None:
         nonlocal tabs  # WARNING I've coded myself into a corner here. TOO BAD
-        tabs.append([folder, 0])  # tab as object?
+        tabs.append([folder, 0])
 
     def do_chromium():
         nonlocal tabs
@@ -61,6 +61,7 @@ def main() -> None:
         help_m = main.children[3]  # TODO DONT HARD CODE THIS. bookmarks.folder("Help", utils.no_op)
         for f in [("tab/shift+tab to change tabs", utils.no_op),
                   ("up/down arrow keys to change selection", utils.no_op),
+                  ("page up/page down keys to scroll by 5", utils.no_op),
                   ("right arrow key to enter folder", utils.no_op),
                   ("left arrow key to return to parent folder", utils.no_op),
                   ("d to delete tab", utils.no_op),
@@ -101,9 +102,13 @@ def main() -> None:
             char = tui.handle_esc()
             if char == "up" and tabs[tab_highlight][1] > 0:
                 tabs[tab_highlight][1] -= 1
+            if char == "pgup" and tabs[tab_highlight][1] >= 5:
+                tabs[tab_highlight][1] -= 5
 
             elif char == "dn" and tabs[tab_highlight][1] < len(tabs[tab_highlight][0].children) - 1:
                 tabs[tab_highlight][1] += 1
+            elif char == "pgdn" and tabs[tab_highlight][1] < len(tabs[tab_highlight][0].children) - 5:
+                tabs[tab_highlight][1] += 5
 
             elif char == "shft+tb" and tab_highlight > 0:
                 tab_highlight -= 1
@@ -116,11 +121,14 @@ def main() -> None:
                 if tabs[tab_highlight][0].children[tabs[tab_highlight][1]].typee == "folder":
                     tabs[tab_highlight][0].children[tabs[tab_highlight][1]].command()
 
-        elif char == "\t":  # NOTE tab isn't an ansi esc sequence os its handled here instead
+        elif char == "\t":  # NOTE tab isn't an ansi esc sequence so its handled here instead
             char = "tab"  # to show on screen
             if tab_highlight < len(tabs) - 1:
                 tab_highlight += 1
                 print("\x1b[3;0H\x1b[0J", end="")
+
+        elif char in ["\b", "\x08", "\x7f"]:  # backspace
+            parent_folder()
 
         elif ord(char) == 10:
             char = "ent"  # to show on screen
