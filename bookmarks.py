@@ -2,6 +2,7 @@
 import json
 import shutil
 import subprocess
+import shlex
 
 import utils
 
@@ -74,7 +75,6 @@ def convert():
     pass
 
 
-# TODO dont need the bookmark and folder class. just use a function that make a dict
 class bookmark():
     def __init__(self, name: str, url: str, parent):
         self.name = name
@@ -85,10 +85,11 @@ class bookmark():
         self.typee = "url"  # "text/x-moz-place"
         self.parent = parent
 
-    def command(self, browser: str = "chromium"):  # This runs when the user hit enter
+    def command(self):  # This runs when the user hits enter
         try:
-            subprocess.Popen([browser, self.url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            utils.log("opened: " + self.url + " with " + browser)
+            run = shlex.split(utils.config["open_cmd"]) + [self.url]
+            subprocess.Popen(run, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            utils.log("opened: " + self.url + " with " + str(utils.config["open_cmd"]))
         except Exception as e:
             utils.log(e)
             print(e)

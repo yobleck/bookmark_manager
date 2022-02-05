@@ -66,7 +66,7 @@ def main() -> None:
         main = bookmarks.folder("Main", utils.no_op)
         for f in [("Import Firefox", do_firefox),
                   ("Import Chromium", do_chromium),
-                  ("Import Both", utils.no_op),
+                  ("TODO Export", utils.no_op),
                   ("Help", enter_folder),
                   ("Quit", partial(utils.quit, 0, ""))]:
             main.add_folder(*f)

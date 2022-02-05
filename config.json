@@ -1,5 +1,6 @@
 {
 "logging":1,
 "firefox_filepath":"/home/yobleck/.mozilla/firefox/miex1agx.default-release/bookmarkbackups/",
-"chromium_filepath":"/home/yobleck/.config/chromium/Default/Bookmarks"
+"chromium_filepath":"/home/yobleck/.config/chromium/Default/Bookmarks",
+"open_cmd":"konsole -e lynx"
 }

@@ -24,3 +24,7 @@ then run lz4jsoncat bookmarks-2022-01-27_2565_mBmGREArjfEBRyoUiPg3bw==.jsonlz4 >
     requires lz4json package
 
 Note 24 megs of ram usage
+
+ideas:
+link rot checker
+create new tab/folders/bookmarks
