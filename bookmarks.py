@@ -8,18 +8,33 @@ import utils
 
 def import_ff(filepath: str) -> dict:  # ignoring the dumb places.sqlite file that doesn't even include the uri's
     try:
-        newest_file = "bookmarks-2022-01-27_2565_mBmGREArjfEBRyoUiPg3bw==.jsonlz4"  # TODO get most recetn
+        newest_file = "bookmarks-2022-02-04_2567_-hj38Gj4gqd1-t5nsLoINA==.jsonlz4"  # TODO get most recetn
         shutil.copy2(filepath + newest_file, "./firefox/bookmarks.jsonlz4")
 
         with open("./firefox/bookmarks.json", "w+") as f:
             subprocess.run(["lz4jsoncat", "./firefox/bookmarks.jsonlz4"], stdout=f)  # decompress mozilla's moronic compression
 
-        with open("./firefox/bookmarks.json", "r") as f:  # van the above open() be used in rw+ mode?
+        with open("./firefox/bookmarks.json", "r") as f:  # can the above open() be used in rw+ mode?
             j = json.load(f)
         utils.log("imported firefox bookmarks")
+        j["title"] = "firefox"
         return j
     except Exception as e:
         utils.quit(1, e)
+
+
+def create_ff_tree(js, par, command) -> dict:
+    #print("start")
+    temp_folder = folder(name=js["title"], command=command, parent=par)
+    if "children" in js:
+        for c in js["children"]:
+            if c["type"] == "text/x-moz-place":  # bookmark
+                #print("uri", c["title"])
+                temp_folder.add_bookmark(name=c["title"], url=c["uri"])
+            elif c["type"] == "text/x-moz-place-container":  # folder
+                #print("folder", c["title"])
+                create_ff_tree(c, temp_folder, command)
+    return temp_folder
 
 
 def import_c(filepath: str) -> dict:  # filepath to Bookmarks file

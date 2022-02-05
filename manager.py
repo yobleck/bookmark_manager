@@ -46,11 +46,25 @@ def main() -> None:
         else:
             add_tab(c_fol)  # BUG adds new tab if old tab is in subfolder
 
+    def do_firefox():
+        nonlocal tabs
+        ff_j = bookmarks.import_ff(utils.config["firefox_filepath"])
+        ff_fol = bookmarks.create_ff_tree(ff_j, None, enter_folder)
+        tab_exists = False  # DRY
+        for i, t in enumerate(tabs):
+            if t[0].name == "firefox":
+                tab_exists = True
+                break
+        if tab_exists:
+            tabs[i] = [ff_fol, 0]
+        else:
+            add_tab(ff_fol)  # simplify this so it takes up fewer lines?
+
     def create_initial_tabs() -> list:
         nonlocal tabs
         #tabs = []
         main = bookmarks.folder("Main", utils.no_op)
-        for f in [("Import Firefox", utils.no_op),
+        for f in [("Import Firefox", do_firefox),
                   ("Import Chromium", do_chromium),
                   ("Import Both", utils.no_op),
                   ("Help", enter_folder),
@@ -71,8 +85,6 @@ def main() -> None:
             help_m.add_folder(*f)
         return tabs
     tabs = create_initial_tabs()
-
-    #ff_j = bookmarks.import_ff(utils.config["firefox_filepath"])
 
     bookmark_temp = bookmarks.folder("test", utils.no_op)
     for f in [("folder1", enter_folder), ("folder2", enter_folder)]:
